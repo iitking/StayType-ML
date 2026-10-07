@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StayType AI - NYC Airbnb Stay & Room Type Classifier</title>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: ["class", '[data-theme="dark"]'],
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: "#0b0f19",
+                        darkCard: "#111827",
+                        brand: {
+                            50: "#eef2ff",
+                            100: "#e0e7ff",
+                            500: "#6366f1",
+                            600: "#4f46e5",
+                            700: "#4338ca"
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    
+    <!-- FontAwesome 6 CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    
+    <!-- Chart.js & Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+    
+    <!-- Custom Stylesheet -->
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body class="min-h-screen flex flex-col antialiased selection:bg-indigo-500 selection:text-white">
+
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Header Navbar -->
+    <header class="sticky top-0 z-40 w-full glass-panel border-b border-white/10 backdrop-blur-xl">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <!-- Brand Logo -->
+            <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-purple-600 to-pink-500 flex items-center justify-center shadow-lg shadow-indigo-500/30">
+                    <i class="fa-solid fa-house-chimney text-white text-lg"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-lg font-bold tracking-tight text-white">StayType<span class="text-indigo-400">.AI</span></span>
+                        <span class="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">Production ML</span>
+                    </div>
+                    <p class="text-[11px] text-gray-400 hidden sm:block">NYC Airbnb Stay & Room Type Intelligent Prediction Engine</p>
+                </div>
+            </div>
+
+            <!-- Metrics Pills & Actions -->
+            <div class="flex items-center gap-3">
+                <!-- ML Metric Badges -->
+                <div class="hidden md:flex items-center gap-2 text-xs">
+                    <div class="px-2.5 py-1 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 flex items-center gap-1.5 font-medium">
+                        <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                        <span>85.6% Accuracy</span>
+                    </div>
+                    <div class="px-2.5 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 font-medium">
+                        <span>73.9% Macro-F1</span>
+                    </div>
+                    <div class="px-2.5 py-1 rounded-lg bg-white/5 border border-white/10 text-gray-300 font-mono text-[11px]">
+                        <span>RandomForest (Tuned)</span>
+                    </div>
+                </div>
+
+                <!-- Theme Toggle Button -->
+                <button id="themeToggleBtn" type="button" aria-label="Toggle theme" class="w-9 h-9 rounded-xl glass-panel flex items-center justify-center hover:scale-105 transition-transform text-gray-300 hover:text-white">
+                    <i class="fa-solid fa-sun text-amber-400 text-sm"></i>
+                </button>
+
+                <!-- API Docs Button -->
+                <a href="/docs" target="_blank" class="px-3 py-1.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white text-xs font-semibold flex items-center gap-1.5 transition-colors">
+                    <i class="fa-solid fa-code text-xs text-indigo-400"></i>
+                    <span>Swagger API</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sub-Navbar: 1-Click Demo Scenarios -->
+    <div class="w-full bg-black/20 border-b border-white/5 py-2.5 px-4 sm:px-6 lg:px-8">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3">
+            <div class="flex items-center gap-2 text-xs font-medium text-gray-400">
+                <i class="fa-solid fa-bolt text-amber-400"></i>
+                <span>Instant Presets:</span>
+            </div>
+            <div id="quickPresetsContainer" class="flex flex-wrap items-center gap-2">
+                <!-- Populated dynamically via app.js -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Workspace Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+            
+            <!-- LEFT COLUMN: Listing Feature Studio (5 cols) -->
+            <div class="lg:col-span-5 space-y-5">
+                <div class="glass-panel rounded-2xl p-5 sm:p-6 space-y-6">
+                    
+                    <div class="flex items-center justify-between pb-3 border-b border-white/10">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-8 h-8 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400">
+                                <i class="fa-solid fa-sliders"></i>
+                            </div>
+                            <div>
+                                <h2 class="text-sm font-bold text-white tracking-tight">Listing Feature Studio</h2>
+                                <p class="text-[11px] text-gray-400">Tune the Airbnb listing attributes to classify stay category</p>
+                            </div>
+                        </div>
+                        <button id="randomizeBtn" type="button" class="text-xs px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white flex items-center gap-1 transition-all">
+                            <i class="fa-solid fa-dice text-purple-400"></i>
+                            <span>Random</span>
+                        </button>
+                    </div>
+
+                    <form id="listingForm" class="space-y-5">
+
+                        <!-- SECTION 1: Borough & Neighborhood -->
+                        <div class="space-y-3">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-map-location-dot text-indigo-400"></i>
+                                <span>1. Select Borough (NYC)</span>
+                            </label>
+                            
+                            <!-- Borough Clickable Pills -->
+                            <div id="boroughPillsContainer" class="flex flex-wrap gap-1.5">
+                                <!-- Dynamically populated -->
+                            </div>
+
+                            <!-- Neighborhood Selector -->
+                            <div class="pt-2">
+                                <label for="neighborhoodSelect" class="block text-xs font-medium text-gray-400 mb-1">
+                                    Neighborhood <span class="text-gray-500 font-normal">(Auto-filtered by borough)</span>
+                                </label>
+                                <div class="relative">
+                                    <select id="neighborhoodSelect" class="w-full input-premium rounded-xl px-3 py-2 text-xs appearance-none font-medium pr-8 focus:ring-1 focus:ring-indigo-500">
+                                        <!-- Dynamically populated -->
+                                    </select>
+                                    <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-400">
+                                        <i class="fa-solid fa-chevron-down text-[10px]"></i>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Coordinates (Lat / Lng) -->
+                            <div class="grid grid-cols-2 gap-2.5 pt-1">
+                                <div>
+                                    <label class="block text-[11px] text-gray-400 mb-0.5">Latitude</label>
+                                    <input id="latInput" type="number" step="0.0001" value="40.7580" class="w-full input-premium rounded-lg px-2.5 py-1.5 text-xs font-mono">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] text-gray-400 mb-0.5">Longitude</label>
+                                    <input id="lngInput" type="number" step="0.0001" value="-73.9855" class="w-full input-premium rounded-lg px-2.5 py-1.5 text-xs font-mono">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 2: Price & Minimum Nights -->
+                        <div class="space-y-4 pt-3 border-t border-white/5">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-dollar-sign text-emerald-400"></i>
+                                <span>2. Pricing & Booking Parameters</span>
+                            </label>
+
+                            <!-- Nightly Price -->
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="text-gray-300 font-medium">Nightly Rate ($ USD)</span>
+                                    <div class="flex items-center gap-1">
+                                        <span class="text-gray-400 text-xs">$</span>
+                                        <input id="priceInput" type="number" min="0" max="1500" value="150" class="w-20 input-premium rounded-lg px-2 py-0.5 text-xs font-mono text-right font-bold text-emerald-400">
+                                    </div>
+                                </div>
+                                <input id="priceSlider" type="range" min="10" max="800" value="150" class="w-full">
+                                <div class="flex justify-between text-[10px] text-gray-500 font-mono">
+                                    <span>$10/night</span>
+                                    <span>$400</span>
+                                    <span>$800+</span>
+                                </div>
+                            </div>
+
+                            <!-- Minimum Nights -->
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="text-gray-300 font-medium">Minimum Stay (Nights)</span>
+                                    <input id="nightsInput" type="number" min="1" max="60" value="2" class="w-16 input-premium rounded-lg px-2 py-0.5 text-xs font-mono text-right font-bold text-indigo-400">
+                                </div>
+                                <input id="nightsSlider" type="range" min="1" max="45" value="2" class="w-full">
+                                <div class="flex justify-between text-[10px] text-gray-500 font-mono">
+                                    <span>1 night</span>
+                                    <span>7 nights</span>
+                                    <span>30+ nights</span>
+                                </div>
+                            </div>
+
+                            <!-- Availability in Year -->
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="text-gray-300 font-medium">Annual Availability (Days / 365)</span>
+                                    <input id="availInput" type="number" min="0" max="365" value="180" class="w-16 input-premium rounded-lg px-2 py-0.5 text-xs font-mono text-right font-bold text-sky-400">
+                                </div>
+                                <input id="availSlider" type="range" min="0" max="365" value="180" class="w-full">
+                                <div class="flex justify-between text-[10px] text-gray-500 font-mono">
+                                    <span>0 days</span>
+                                    <span>180 days</span>
+                                    <span>365 days</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- SECTION 3: Reviews & Host Characteristics -->
+                        <div class="space-y-4 pt-3 border-t border-white/5">
+                            <label class="block text-xs font-bold uppercase tracking-wider text-gray-300 flex items-center gap-1.5">
+                                <i class="fa-solid fa-user-check text-purple-400"></i>
+                                <span>3. Host Activity & Review Velocity</span>
+                            </label>
+
+                            <!-- Total Reviews & Reviews per Month -->
+                            <div class="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label class="block text-[11px] text-gray-400 mb-1">Total Reviews</label>
+                                    <input id="reviewsInput" type="number" min="0" max="800" value="15" class="w-full input-premium rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold">
+                                    <input id="reviewsSlider" type="range" min="0" max="250" value="15" class="w-full mt-2">
+                                </div>
+                                <div>
+                                    <label class="block text-[11px] text-gray-400 mb-1">Reviews / Month</label>
+                                    <input id="reviewsPerMonthInput" type="number" step="0.1" min="0" max="25" value="1.25" class="w-full input-premium rounded-lg px-2.5 py-1.5 text-xs font-mono font-bold">
+                                    <p class="text-[10px] text-gray-500 mt-2">Historical velocity</p>
+                                </div>
+                            </div>
+
+                            <!-- Host Listings Count -->
+                            <div class="space-y-2">
+                                <div class="flex justify-between items-center text-xs">
+                                    <span class="text-gray-300 font-medium">Host Portfolio Size (Listings)</span>
+                                    <input id="hostListingsInput" type="number" min="1" max="100" value="1" class="w-16 input-premium rounded-lg px-2 py-0.5 text-xs font-mono text-right font-bold text-purple-400">
+                                </div>
+                                <input id="hostListingsSlider" type="range" min="1" max="25" value="1" class="w-full">
+                                <div class="flex justify-between text-[10px] text-gray-500 font-mono">
+                                    <span>1 (Individual)</span>
+                                    <span>5 (Semi-Pro)</span>
+                                    <span>25+ (Agency)</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="pt-4 border-t border-white/10 flex flex-col sm:flex-row gap-2.5">
+                            <button id="predictBtn" type="submit" class="flex-1 py-3 px-4 rounded-xl bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 hover:via-purple-500 hover:to-pink-500 text-white font-bold text-xs shadow-lg shadow-indigo-600/30 hover:shadow-indigo-600/50 flex items-center justify-center gap-2 transition-all hover:scale-[1.02] active:scale-[0.98]">
+                                <i id="btnSpinner" class="fa-solid fa-circle-notch fa-spin hidden"></i>
+                                <span id="btnText">Classify Stay Type</span>
+                                <i class="fa-solid fa-arrow-right text-xs"></i>
+                            </button>
+                            <button id="resetBtn" type="button" class="py-3 px-4 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-gray-300 hover:text-white text-xs font-semibold transition-colors">
+                                <i class="fa-solid fa-rotate-left mr-1"></i> Reset
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: AI Prediction & Visual Analytics (7 cols) -->
+            <div class="lg:col-span-7 space-y-6">
+                
+                <!-- HERO PREDICTION RESULT CARD -->
+                <div id="resultHeroCard" class="glass-panel rounded-2xl p-6 transition-all duration-500 border border-white/10 relative overflow-hidden">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/10">
+                        <div class="flex items-center gap-3.5">
+                            <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center shrink-0">
+                                <i id="resultStayIcon" class="fa-solid fa-house-chimney text-emerald-400 text-3xl"></i>
+                            </div>
+                            <div>
+                                <span class="text-[10px] font-bold uppercase tracking-wider text-gray-400">Classified Stay Type</span>
+                                <h1 id="resultStayTitle" class="text-2xl font-extrabold text-white tracking-tight">Entire Home / Apartment</h1>
+                            </div>
+                        </div>
+                        <div class="flex sm:flex-col items-end justify-between sm:justify-center">
+                            <span id="resultConfidenceBadge" class="px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 text-xs font-bold">
+                                94.2% Match
+                            </span>
+                            <span class="text-[10px] text-gray-400 mt-1">Random Forest Prediction</span>
+                        </div>
+                    </div>
+
+                    <!-- Category Description & Best For -->
+                    <div class="py-4 space-y-2">
+                        <p id="resultStayDescription" class="text-xs text-gray-300 leading-relaxed">
+                            Guests have the whole place to themselves. Typically includes a private bedroom, bathroom, living space, and kitchen.
+                        </p>
+                        <div class="flex items-center gap-2 text-xs text-gray-400 pt-1">
+                            <span class="font-semibold text-gray-200"><i class="fa-solid fa-user-group text-indigo-400 mr-1"></i> Ideal For:</span>
+                            <span id="resultBestForText" class="text-gray-300">Couples, families, executives, and travelers seeking autonomy.</span>
+                        </div>
+                    </div>
+
+                    <!-- Multi-Class Probability Breakdown -->
+                    <div class="pt-4 border-t border-white/10 space-y-3">
+                        <h4 class="text-xs font-bold uppercase tracking-wider text-gray-400 flex items-center justify-between">
+                            <span>Classification Probability Distribution</span>
+                            <span class="text-[10px] font-mono text-gray-500">Pipeline Softmax Output</span>
+                        </h4>
+                        <div id="probabilityBarsContainer" class="space-y-2.5">
+                            <!-- Populated dynamically via app.js -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DUAL VISUALIZATION CHARTS -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    
+                    <!-- Radar Chart: Listing Profile -->
+                    <div class="glass-panel rounded-2xl p-4 space-y-3">
+                        <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                            <span class="text-xs font-bold text-gray-200 flex items-center gap-1.5">
+                                <i class="fa-solid fa-chart-pie text-indigo-400"></i>
+                                <span>Stay Feature Radar</span>
+                            </span>
+                            <span class="text-[10px] text-gray-500">Vs NYC Median</span>
+                        </div>
+                        <div class="h-52 relative">
+                            <canvas id="radarChart"></canvas>
+                        </div>
+                    </div>
+
+                    <!-- Doughnut Chart: Probability Share -->
+                    <div class="glass-panel rounded-2xl p-4 space-y-3">
+                        <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                            <span class="text-xs font-bold text-gray-200 flex items-center gap-1.5">
+                                <i class="fa-solid fa-chart-donut text-purple-400"></i>
+                                <span>Category Share</span>
+                            </span>
+                            <span class="text-[10px] text-gray-500">Confidence Breakdown</span>
+                        </div>
+                        <div class="h-52 relative">
+                            <canvas id="doughnutChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- SMART MARKET INSIGHTS -->
+                <div class="glass-panel rounded-2xl p-5 space-y-3">
+                    <div class="flex items-center gap-2 pb-2 border-b border-white/10">
+                        <div class="w-6 h-6 rounded bg-emerald-500/10 flex items-center justify-center text-emerald-400 text-xs">
+                            <i class="fa-solid fa-lightbulb"></i>
+                        </div>
+                        <h3 class="text-xs font-bold text-white uppercase tracking-wider">AI Market Heuristics & Explainability</h3>
+                    </div>
+                    <ul id="insightsList" class="space-y-2">
+                        <!-- Populated dynamically via app.js -->
+                    </ul>
+                </div>
+
+                <!-- RECENT PREDICTIONS HISTORY TABLE -->
+                <div class="glass-panel rounded-2xl p-5 space-y-3">
+                    <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                        <h3 class="text-xs font-bold text-white uppercase tracking-wider flex items-center gap-1.5">
+                            <i class="fa-solid fa-clock-rotate-left text-indigo-400"></i>
+                            <span>Session Prediction History</span>
+                        </h3>
+                        <span class="text-[10px] text-gray-500 font-mono">Last 5 Runs</span>
+                    </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left border-collapse">
+                            <thead>
+                                <tr class="text-[10px] text-gray-400 uppercase tracking-wider border-b border-white/10">
+                                    <th class="py-2 px-3">Time</th>
+                                    <th class="py-2 px-3">Prediction</th>
+                                    <th class="py-2 px-3">Confidence</th>
+                                    <th class="py-2 px-3">Location</th>
+                                    <th class="py-2 px-3">Price</th>
+                                </tr>
+                            </thead>
+                            <tbody id="historyTableBody">
+                                <!-- Populated dynamically via app.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- DEVELOPER / API INSPECT DRAWER -->
+                <div class="glass-panel rounded-2xl p-5 space-y-3">
+                    <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                        <div class="flex items-center gap-2">
+                            <i class="fa-solid fa-terminal text-indigo-400 text-xs"></i>
+                            <span class="text-xs font-bold text-gray-200 uppercase tracking-wider">Developer & API Inspector</span>
+                        </div>
+                        <span class="text-[10px] text-gray-500 font-mono">POST /api/predict</span>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
+                        <!-- Request JSON -->
+                        <div class="bg-black/40 rounded-xl p-3 border border-white/5 space-y-2">
+                            <div class="flex justify-between items-center text-[11px] text-gray-400">
+                                <span>Request Body (JSON)</span>
+                                <button type="button" data-copy-target="apiJsonRequest" class="hover:text-indigo-400 transition-colors">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                            </div>
+                            <pre id="apiJsonRequest" class="text-[10px] font-mono text-gray-300 max-h-36 overflow-y-auto leading-tight"></pre>
+                        </div>
+
+                        <!-- Response JSON -->
+                        <div class="bg-black/40 rounded-xl p-3 border border-white/5 space-y-2">
+                            <div class="flex justify-between items-center text-[11px] text-gray-400">
+                                <span>Response (JSON)</span>
+                                <button type="button" data-copy-target="apiJsonResponse" class="hover:text-indigo-400 transition-colors">
+                                    <i class="fa-regular fa-copy"></i>
+                                </button>
+                            </div>
+                            <pre id="apiJsonResponse" class="text-[10px] font-mono text-emerald-400 max-h-36 overflow-y-auto leading-tight"></pre>
+                        </div>
+                    </div>
+
+                    <!-- cURL Snippet -->
+                    <div class="bg-black/40 rounded-xl p-3 border border-white/5 space-y-1.5">
+                        <div class="flex justify-between items-center text-[11px] text-gray-400">
+                            <span>cURL Command</span>
+                            <button type="button" data-copy-target="apiCurlSnippet" class="hover:text-indigo-400 transition-colors">
+                                <i class="fa-regular fa-copy"></i>
+                            </button>
+                        </div>
+                        <pre id="apiCurlSnippet" class="text-[10px] font-mono text-indigo-300 overflow-x-auto whitespace-pre leading-tight"></pre>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="w-full glass-panel border-t border-white/10 py-6 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs text-gray-400">
+            <div class="flex items-center gap-2">
+                <span class="font-bold text-gray-300">StayType AI</span>
+                <span>•</span>
+                <span>Trained on 48,895 NYC Airbnb Records (AB_NYC_2019)</span>
+            </div>
+            <div class="flex items-center gap-4">
+                <span>FastAPI 0.142</span>
+                <span>•</span>
+                <span>Scikit-Learn 1.6.1</span>
+                <span>•</span>
+                <span>Random Forest Pipeline</span>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Main Frontend Script -->
+    <script src="/static/js/app.js"></script>
+</body>
+</html>
