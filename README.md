@@ -1,12 +1,17 @@
 # 🏠 StayType AI - NYC Airbnb Stay & Room Type Classifier
 
+[![Live Demo](https://img.shields.io/badge/Live_Demo-Render-00c7b7.svg?style=for-the-badge&logo=render&logoColor=white)](https://staytype-ml.onrender.com)
+[![Swagger Docs](https://img.shields.io/badge/API_Docs-Swagger-85EA2D.svg?style=for-the-badge&logo=swagger&logoColor=black)](https://staytype-ml.onrender.com/docs)
+
 [![Python Version](https://img.shields.io/badge/Python-3.12%2B-blue.svg?logo=python&logoColor=white)](https://www.python.org/)
 [![FastAPI](https://img.shields.io/badge/FastAPI-0.142%2B-009688.svg?logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
 [![Scikit-Learn](https://img.shields.io/badge/scikit--learn-1.6.1-F7931E.svg?logo=scikit-learn&logoColor=white)](https://scikit-learn.org/)
 [![Docker](https://img.shields.io/badge/Docker-Ready-2496ED.svg?logo=docker&logoColor=white)](https://www.docker.com/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-[![Code Style](https://img.shields.io/badge/Code%20Style-Black-000000.svg)](https://github.com/psf/black)
 
+> 🚀 **Live Application**: **[https://staytype-ml.onrender.com](https://staytype-ml.onrender.com)**  
+> 📖 **Interactive OpenAPI (Swagger) Docs**: **[https://staytype-ml.onrender.com/docs](https://staytype-ml.onrender.com/docs)**
+>
 > **StayType AI** is an end-to-end Machine Learning web platform and high-performance REST API that predicts the optimal accommodation type (**Entire home/apt**, **Private room**, or **Shared room**) for New York City listings based on spatial location, pricing dynamics, availability, and host activity metrics.
 
 ---
@@ -232,6 +237,19 @@ tests/test_api.py::test_predict_validation_error PASSED
 
 ---
 
+## 👨‍💻 Author & Maintainer
+
+**Nivesh Kumar Meena**
+- 🌐 **GitHub**: [@iitking](https://github.com/iitking)
+- 📧 **Email**: [niveshkr149@gmail.com](mailto:niveshkr149@gmail.com)
+- 📁 **Repository**: [github.com/iitking/StayType-ML](https://github.com/iitking/StayType-ML)
+- 🚀 **Live Demo**: [staytype-ml.onrender.com](https://staytype-ml.onrender.com)
+
+*Contributions, feedback, and questions are welcome! Feel free to star ⭐ the repository if you found it useful.*
+
+---
+
 ## 📄 License
 
 This project is licensed under the MIT License - feel free to use and adapt it for your portfolio or commercial deployments!
+
