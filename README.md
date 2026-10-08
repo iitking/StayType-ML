@@ -240,8 +240,9 @@ tests/test_api.py::test_predict_validation_error PASSED
 ## 👨‍💻 Author 
 
 **Nivesh Kumar Meena**
-**B.Tech Electrical Engineering  
-IIT Roorkee**
+
+B.Tech Electrical Engineering  
+IIT Roorkee
 
 - 🌐 **GitHub**: [@iitking](https://github.com/iitking)
 - 📧 **Email**: [niveshkr149@gmail.com](mailto:niveshkr149@gmail.com)
