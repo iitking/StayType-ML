@@ -123,6 +123,27 @@ function setupEventListeners() {
 
     // Copy JSON buttons
     setupCopyButtons();
+
+    // Toggle Developer & API Inspector drawer (Collapsible)
+    const toggleDevDrawerBtn = document.getElementById("toggleDevDrawerBtn");
+    const devDrawerContent = document.getElementById("devDrawerContent");
+    const devDrawerChevron = document.getElementById("devDrawerChevron");
+    const devDrawerToggleText = document.getElementById("devDrawerToggleText");
+
+    if (toggleDevDrawerBtn && devDrawerContent) {
+        toggleDevDrawerBtn.addEventListener("click", () => {
+            const isHidden = devDrawerContent.classList.contains("hidden");
+            if (isHidden) {
+                devDrawerContent.classList.remove("hidden");
+                if (devDrawerChevron) devDrawerChevron.style.transform = "rotate(180deg)";
+                if (devDrawerToggleText) devDrawerToggleText.textContent = "Click to collapse";
+            } else {
+                devDrawerContent.classList.add("hidden");
+                if (devDrawerChevron) devDrawerChevron.style.transform = "rotate(0deg)";
+                if (devDrawerToggleText) devDrawerToggleText.textContent = "Click to expand";
+            }
+        });
+    }
 }
 
 // Fetch Metadata (Boroughs, Neighborhoods, Presets)

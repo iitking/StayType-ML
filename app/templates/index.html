@@ -396,49 +396,62 @@
                     </div>
                 </div>
 
-                <!-- DEVELOPER / API INSPECT DRAWER -->
-                <div class="glass-panel rounded-2xl p-5 space-y-3">
-                    <div class="flex items-center justify-between pb-2 border-b border-white/10">
+                <!-- DEVELOPER / API INSPECT DRAWER (Collapsible) -->
+                <div class="glass-panel rounded-2xl p-4 sm:p-5 transition-all">
+                    <button id="toggleDevDrawerBtn" type="button" class="w-full flex items-center justify-between text-left group cursor-pointer focus:outline-none">
+                        <div class="flex items-center gap-2.5">
+                            <div class="w-7 h-7 rounded-lg bg-indigo-500/10 flex items-center justify-center text-indigo-400 text-xs">
+                                <i class="fa-solid fa-terminal"></i>
+                            </div>
+                            <div class="flex flex-wrap items-center gap-2">
+                                <span class="text-xs font-bold text-gray-200 uppercase tracking-wider group-hover:text-indigo-400 transition-colors">Developer & API Inspector</span>
+                                <span class="text-[10px] text-gray-500 font-mono">POST /api/predict</span>
+                            </div>
+                        </div>
                         <div class="flex items-center gap-2">
-                            <i class="fa-solid fa-terminal text-indigo-400 text-xs"></i>
-                            <span class="text-xs font-bold text-gray-200 uppercase tracking-wider">Developer & API Inspector</span>
+                            <span id="devDrawerToggleText" class="text-[10px] text-gray-400 group-hover:text-gray-200 hidden sm:inline">Click to expand</span>
+                            <div class="w-6 h-6 rounded-lg bg-white/5 flex items-center justify-center text-gray-400 group-hover:text-white transition-all">
+                                <i id="devDrawerChevron" class="fa-solid fa-chevron-down text-xs transition-transform duration-300"></i>
+                            </div>
                         </div>
-                        <span class="text-[10px] text-gray-500 font-mono">POST /api/predict</span>
-                    </div>
+                    </button>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2">
-                        <!-- Request JSON -->
-                        <div class="bg-black/40 rounded-xl p-3 border border-white/5 space-y-2">
+                    <!-- Collapsible Content (Hidden by default) -->
+                    <div id="devDrawerContent" class="hidden space-y-3 pt-3 border-t border-white/10 mt-3 animate-fade-in">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-3 pt-1">
+                            <!-- Request JSON -->
+                            <div class="bg-black/40 rounded-xl p-3 border border-white/5 space-y-2">
+                                <div class="flex justify-between items-center text-[11px] text-gray-400">
+                                    <span>Request Body (JSON)</span>
+                                    <button type="button" data-copy-target="apiJsonRequest" class="hover:text-indigo-400 transition-colors">
+                                        <i class="fa-regular fa-copy"></i>
+                                    </button>
+                                </div>
+                                <pre id="apiJsonRequest" class="text-[10px] font-mono text-gray-300 max-h-36 overflow-y-auto leading-tight"></pre>
+                            </div>
+
+                            <!-- Response JSON -->
+                            <div class="bg-black/40 rounded-xl p-3 border border-white/5 space-y-2">
+                                <div class="flex justify-between items-center text-[11px] text-gray-400">
+                                    <span>Response (JSON)</span>
+                                    <button type="button" data-copy-target="apiJsonResponse" class="hover:text-indigo-400 transition-colors">
+                                        <i class="fa-regular fa-copy"></i>
+                                    </button>
+                                </div>
+                                <pre id="apiJsonResponse" class="text-[10px] font-mono text-emerald-400 max-h-36 overflow-y-auto leading-tight"></pre>
+                            </div>
+                        </div>
+
+                        <!-- cURL Snippet -->
+                        <div class="bg-black/40 rounded-xl p-3 border border-white/5 space-y-1.5">
                             <div class="flex justify-between items-center text-[11px] text-gray-400">
-                                <span>Request Body (JSON)</span>
-                                <button type="button" data-copy-target="apiJsonRequest" class="hover:text-indigo-400 transition-colors">
+                                <span>cURL Command</span>
+                                <button type="button" data-copy-target="apiCurlSnippet" class="hover:text-indigo-400 transition-colors">
                                     <i class="fa-regular fa-copy"></i>
                                 </button>
                             </div>
-                            <pre id="apiJsonRequest" class="text-[10px] font-mono text-gray-300 max-h-36 overflow-y-auto leading-tight"></pre>
+                            <pre id="apiCurlSnippet" class="text-[10px] font-mono text-indigo-300 overflow-x-auto whitespace-pre leading-tight"></pre>
                         </div>
-
-                        <!-- Response JSON -->
-                        <div class="bg-black/40 rounded-xl p-3 border border-white/5 space-y-2">
-                            <div class="flex justify-between items-center text-[11px] text-gray-400">
-                                <span>Response (JSON)</span>
-                                <button type="button" data-copy-target="apiJsonResponse" class="hover:text-indigo-400 transition-colors">
-                                    <i class="fa-regular fa-copy"></i>
-                                </button>
-                            </div>
-                            <pre id="apiJsonResponse" class="text-[10px] font-mono text-emerald-400 max-h-36 overflow-y-auto leading-tight"></pre>
-                        </div>
-                    </div>
-
-                    <!-- cURL Snippet -->
-                    <div class="bg-black/40 rounded-xl p-3 border border-white/5 space-y-1.5">
-                        <div class="flex justify-between items-center text-[11px] text-gray-400">
-                            <span>cURL Command</span>
-                            <button type="button" data-copy-target="apiCurlSnippet" class="hover:text-indigo-400 transition-colors">
-                                <i class="fa-regular fa-copy"></i>
-                            </button>
-                        </div>
-                        <pre id="apiCurlSnippet" class="text-[10px] font-mono text-indigo-300 overflow-x-auto whitespace-pre leading-tight"></pre>
                     </div>
                 </div>
 
