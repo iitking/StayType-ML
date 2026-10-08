@@ -237,9 +237,12 @@ tests/test_api.py::test_predict_validation_error PASSED
 
 ---
 
-## 👨‍💻 Author & Maintainer
+## 👨‍💻 Author 
 
 **Nivesh Kumar Meena**
+**B.Tech Electrical Engineering  
+IIT Roorkee**
+
 - 🌐 **GitHub**: [@iitking](https://github.com/iitking)
 - 📧 **Email**: [niveshkr149@gmail.com](mailto:niveshkr149@gmail.com)
 - 📁 **Repository**: [github.com/iitking/StayType-ML](https://github.com/iitking/StayType-ML)
